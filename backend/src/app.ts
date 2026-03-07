@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import path from 'path'
 // Для ограничения количества запросов
 import rateLimit from 'express-rate-limit';
+import csrf from 'csurf'
 import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
@@ -15,7 +16,9 @@ import routes from './routes'
 const { PORT = 3000 } = process.env
 const app = express()
 
+
 app.use(cookieParser())
+const csrfProtection = csrf({ cookie: true });
 
 app.use(cors({ origin: process.env.ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -38,6 +41,10 @@ app.use(
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
+
+app.get('/auth/csrf-token', csrfProtection, (req, res) => {
+    res.send(req.csrfToken());
+});
 
 // eslint-disable-next-line no-console
 
