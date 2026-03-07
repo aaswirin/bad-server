@@ -5,6 +5,8 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
+// Для ограничения количества запросов
+import rateLimit from 'express-rate-limit';
 import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
@@ -15,16 +17,24 @@ const app = express()
 
 app.use(cookieParser())
 
-app.use(cors())
-// app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
+app.use(cors({ origin: process.env.ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '100kb' }));
+app.use(json({ limit: '100kb' }));
 
 app.options('*', cors())
+app.use(
+    rateLimit({
+        windowMs: 60000, // 1 минута
+        limit: 30, // Не более 30 запросов в минуту
+        message: 'Слишком много запросов с вашего компьютера, возможно у вас вирус!!!',
+        standardHeaders: 'draft-8', // включает поддержку заголовков RateLimit
+    })
+);
+
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
