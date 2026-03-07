@@ -1,5 +1,4 @@
 import { API_URL, CDN_URL } from '@constants'
-
 import {
     ICustomerPaginationResult,
     ICustomerResult,
@@ -33,12 +32,15 @@ export type ApiListResponse<Type> = {
 class Api {
     private readonly baseUrl: string
     protected options: RequestInit
+    private csrfToken: string = ''
 
     constructor(baseUrl: string, options: RequestInit = {}) {
         this.baseUrl = baseUrl
         this.options = {
+            credentials: 'include',
             headers: {
                 ...((options.headers as object) ?? {}),
+                'x-csrf-token': getCookie('_csrf') ?? ''
             },
         }
     }
@@ -53,11 +55,25 @@ class Api {
                   )
     }
 
+     private async getCsrfToken(): Promise<string> {
+        if (this.csrfToken) return this.csrfToken
+        const res = await fetch(`${this.baseUrl}/auth/csrf-token`, { credentials: 'include' })
+        const data = await res.json()
+        this.csrfToken = data.csrfToken || ''
+        setCookie('_csrf', this.csrfToken)
+        return this.csrfToken
+    }
+
+
     protected async request<T>(endpoint: string, options: RequestInit) {
         try {
+            let headers = { ...(this.options.headers || {}), ...(options.headers || {}) }
+            const csrfToken = await this.getCsrfToken()
+            headers = { ...headers, 'x-csrf-token': csrfToken }
             const res = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...this.options,
                 ...options,
+                headers,
             })
             return await this.handleResponse<T>(res)
         } catch (error) {
@@ -298,8 +314,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         })
     }
 
-    createProduct = (data: Omit<IProduct, '_id'>) => {
-        console.log(data)
+    createProduct = (data: Omit<IProduct, '_id'>) => {      
         return this.requestWithRefresh<IProduct>('/product', {
             method: 'POST',
             body: JSON.stringify(data),
