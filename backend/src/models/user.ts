@@ -25,6 +25,7 @@ export interface IUser extends Document {
     orders: Types.ObjectId[]
     lastOrderDate: Date | null
     lastOrder: Types.ObjectId | null
+    
 }
 
 interface IUserMethods {
@@ -117,7 +118,10 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
 userSchema.pre('save', async function hashingPassword(next) {
     try {
         if (this.isModified('password')) {
-            this.password = md5(this.password)
+            const password = this.get('password')
+            if (password) {
+              this.password = md5(password)
+            }
         }
         next()
     } catch (error) {

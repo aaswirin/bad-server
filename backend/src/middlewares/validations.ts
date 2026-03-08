@@ -35,8 +35,10 @@ export const validateOrderBody = celebrate({
         email: Joi.string().email().required().messages({
             'string.empty': 'Не указан email',
         }),
-        phone: Joi.string().required().pattern(phoneRegExp).messages({
-            'string.empty': 'Не указан телефон',
+        phone: Joi.string().required().max(12).pattern(phoneRegExp).messages({
+            'string.max': 'Неверное количество цифр в номере телефона, должно быть 12 (+71234567890)',
+            'string.pattern.base': 'Неверный формат номера телефона',
+            'string.empty': 'Не указан номер телефона',
         }),
         address: Joi.string().required().messages({
             'string.empty': 'Не указан адрес',
@@ -133,3 +135,40 @@ export const validateAuthentication = celebrate({
         }),
     }),
 })
+
+export const validateOrderQuery = celebrate({
+    query: Joi.object().keys({
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(1000).default(10),
+        sortOrder:
+            Joi.string()
+                .valid('asc', 'desc')
+                .default('desc')
+                .messages({
+                    'any.only': 'Недопустимый порядок сортировки',
+                }),
+        sortField: 
+            Joi.string()
+            .valid('createdAt', 'totalAmount', 'orderNumber', 'status')
+            .default('createdAt')
+            .messages({ 'any.only': 'Неверная сортировка' }),
+        status:
+            Joi.alternatives().try(
+            Joi.string(),
+            Joi.array().items(Joi.string())
+        ),
+        totalAmountFrom: Joi.number().min(0),
+        totalAmountTo: Joi.number().min(0),
+        orderDateFrom: Joi.date().iso(),
+        orderDateTo: Joi.date().iso(),
+        search:
+            Joi.string()
+            .max(50)
+            .pattern(/^[a-zA-Z0-9\s\-.,!?]+$/)
+            .optional()
+            .messages({
+                'string.max': 'Запрос заказов слишком длинный',
+                'string.pattern.base': 'B запросе заказов содержаться неверные символы ',
+            }),
+    }).options({ allowUnknown: true }),
+});
