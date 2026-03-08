@@ -10,7 +10,6 @@ export default function Header() {
     const user = useSelector(userSelectors.getUser)
     const isAdmin = useMatch('/admin/*')
     const location = useLocation()
-
     return (
         <header className={styles.header}>
             <div className={styles.header__container}>

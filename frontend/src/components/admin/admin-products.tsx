@@ -23,8 +23,7 @@ export default function AdminProducts() {
         getProducts,
         productsSelector.selectProducts,
         5
-    )
-    console.log(products)
+    )   
 
     return (
         <main className={clsx(styles.admin__products, styles.admin__container)}>
