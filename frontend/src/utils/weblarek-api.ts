@@ -56,15 +56,12 @@ class Api {
     }
 
      private async getCsrfToken(): Promise<string> {
-        if (this.csrfToken) return this.csrfToken;
-
-        const res = await fetch(`${this.baseUrl}/auth/csrf-token`, { credentials: 'include' });
-        const data = await res.json();
-
-        this.csrfToken = data.csrfToken || '';
-        setCookie('_csrf', this.csrfToken);
-
-        return this.csrfToken;
+        if (this.csrfToken) return this.csrfToken
+        const res = await fetch(`${this.baseUrl}/auth/csrf-token`, { credentials: 'include' })
+        const data = await res.json()
+        this.csrfToken = data.csrfToken || ''
+        setCookie('_csrf', this.csrfToken)
+        return this.csrfToken
     }
 
 
@@ -317,7 +314,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
         })
     }
 
-    createProduct = (data: Omit<IProduct, '_id'>) => {
+    createProduct = (data: Omit<IProduct, '_id'>) => {      
         return this.requestWithRefresh<IProduct>('/product', {
             method: 'POST',
             body: JSON.stringify(data),
