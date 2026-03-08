@@ -56,7 +56,7 @@ export default multer({
     storage,
     fileFilter,
     limits: {
-      fileSize: 3 * 1000 * 1000, // 3 мегабайта, а не мибибайта
+      fileSize: 10 * 1024 * 1024, // 10 мибибайт
       files: 1,
     },
 })
