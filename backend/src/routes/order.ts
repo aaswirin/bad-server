@@ -20,7 +20,13 @@ orderRouter.post(
     validateOrderBody,
     validateOrderQuery,
     createOrder);
-orderRouter.get('/all', auth, roleGuardMiddleware(Role.Admin), getOrders)
+orderRouter.get(
+    '/all',
+    auth,
+    roleGuardMiddleware(Role.Admin),
+    validateOrderBody,
+    validateOrderQuery,
+    getOrders)
 orderRouter.get('/all/me', auth, getOrdersCurrentUser)
 orderRouter.get(
     '/:orderNumber',
