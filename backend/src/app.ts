@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import path from 'path'
 // Для ограничения количества запросов
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
 import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
@@ -61,6 +62,7 @@ app.use(
     })
 );
 
+app.use(mongoSanitize());
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)

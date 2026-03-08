@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import { constants } from 'http2'
+import fs from 'node:fs/promises';
 import BadRequestError from '../errors/bad-request-error'
+import { checkMetaData } from '../utils/checkMetaData';
 
 export const uploadFile = async (
     req: Request,
@@ -13,6 +15,16 @@ export const uploadFile = async (
     if (req.file.size <  2 * 1024) {  // 2 кибибайта
         return next(new BadRequestError('Файл очень маленький, должно быть более 2 KiB'))
     }
+
+    const filePath = req.file.path;
+    const mimeType = req.file.mimetype.toLowerCase();
+
+    const buffer = await fs.readFile(filePath);
+    if (!checkMetaData(buffer, mimeType)) {
+        await fs.unlink(filePath); // Удалить от греха
+        return next(new BadRequestError('Неверный формат файла'));
+    }
+
     try {
         const fileName = process.env.UPLOAD_PATH
             ? `/${process.env.UPLOAD_PATH}/${req.file.filename}`
